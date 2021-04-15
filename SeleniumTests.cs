@@ -3,73 +3,95 @@ using System;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium;
 
-namespace SeleniumTests
+namespace ParrotsNameSiteTests
 {
     public class SeleniumTests
     {
-        private ChromeDriver driver;
-        private By emailInputLocator = By.Name("email");
-        private By radioButtonBoyLocator = By.Id("boy");
-        private By radioButtonGirlLocator = By.Id("girl");
-        private By sendButtonLocator = By.Id("sendMe");
-        private By emailResultTextLocator = By.Name("result-text");
-        private By anotherEmailLinkLocator = By.LinkText("указать другой e-mail");
+        public ChromeDriver driver;
 
         [SetUp]
         public void SetUp()
         {
-            driver = new ChromeDriver();
+            var options = new ChromeOptions();
+            options.AddArgument("--start-maximized");
+            driver = new ChromeDriver(options);
         }
+
+        private By emailInputLocator = By.Name("email");
+        private By radioButtonBoyLocator = By.Id("boy");
+        private By radioButtonGirlLocator = By.Id("girl");
+        private By sendButtonLocator = By.Id("sendMe");
+        private By resultTextLocator = By.ClassName("result-text");
+        private By emailResultTextLocator = By.ClassName("your-email");
+        private By anotherEmailLinkLocator = By.Id("anotherEmail");
+        private By errorTextLocator = By.ClassName("form-error");
+
+        private const string siteUrl = "https://qa-course.kontur.host/selenium-practice";
+        private const string correctEmail = "test@email.ru";
+        private const string wrongEmail = "te∞#¢#€¢∞";
 
         [Test]
 
-        public void getBoysNames()
+        public void enterCorrectEmail()
         {
-            driver.Navigate().GoToUrl("https://qa-course.kontur.host/selenium-practice/");
-            driver.FindElement(emailInputLocator).SendKeys("test@email.ru");
+            var expectedEmail = "test@email.ru";
+            driver.Navigate().GoToUrl(siteUrl);
+            driver.FindElement(emailInputLocator).SendKeys(correctEmail);
             driver.FindElement(sendButtonLocator).Click();
-            driver.FindElement(radioButtonGirlLocator).Click();
-            Assert.AreEqual("test@email.ru", driver.FindElement(emailResultTextLocator).Text);
+            Assert.AreEqual(expectedEmail, driver.FindElement(emailResultTextLocator).Text, "Почта не совпадает");
         }
 
-        public void getGirlNames()
+        public void selectBoysNames()
         {
-            driver.Navigate().GoToUrl("https://qa-course.kontur.host/selenium-practice/");
-            driver.FindElement(emailInputLocator).SendKeys("test@email.ru");
+            driver.Navigate().GoToUrl(siteUrl);
+            driver.FindElement(radioButtonBoyLocator).Click();
+            driver.FindElement(emailInputLocator).SendKeys(correctEmail);
             driver.FindElement(sendButtonLocator).Click();
-            driver.FindElement(radioButtonGirlLocator).Click();
-            Assert.AreEqual("test@email.ru", driver.FindElement(emailResultTextLocator).Text);
+            Assert.IsTrue(driver.FindElement(resultTextLocator).Text.Contains("мальчика"), "указан другой пол");
         }
 
-        public void uncorrectEmail()
+        public void selectGirlNames()
         {
-            driver.Navigate().GoToUrl("https://qa-course.kontur.host/selenium-practice/");
-            driver.FindElement(emailInputLocator).SendKeys("te∞#¢#€¢∞");
-            driver.FindElement(sendButtonLocator).Click();
+            driver.Navigate().GoToUrl(siteUrl);
             driver.FindElement(radioButtonGirlLocator).Click();
-            Assert.AreEqual("te∞#¢#€¢∞", driver.FindElement(emailResultTextLocator).Text);
+            driver.FindElement(emailInputLocator).SendKeys(correctEmail);
+            driver.FindElement(sendButtonLocator).Click();
+            Assert.IsTrue(driver.FindElement(resultTextLocator).Text.Contains("девочки"), "указан другой пол");
         }
 
-        public void EnterEmail()
+        public void incorrectEmail()
         {
-            driver.Navigate().GoToUrl("https://qa-course.kontur.host/selenium-practice/");
+            driver.Navigate().GoToUrl(siteUrl);
+            driver.FindElement(emailInputLocator).SendKeys(wrongEmail);
             driver.FindElement(sendButtonLocator).Click();
             driver.FindElement(radioButtonGirlLocator).Click();
-            Assert.AreEqual("", driver.FindElement(emailResultTextLocator).Text);
+            Assert.IsTrue(driver.FindElements(errorTextLocator).Count == 0, "Принят некорректный email");
+            Assert.AreEqual("Некорректный email", driver.FindElement(errorTextLocator).Text);
         }
 
-        public void EnterVeryLoongEmail()
+        public void EnterEmptyEmail()
         {
-            driver.Navigate().GoToUrl("https://qa-course.kontur.host/selenium-practice/");
+            driver.Navigate().GoToUrl(siteUrl);
             driver.FindElement(sendButtonLocator).Click();
-            driver.FindElement(radioButtonGirlLocator).Click();
-            Assert.AreEqual("te∞#¢#€¢∞", driver.FindElement(emailResultTextLocator).Text);
+            Assert.IsTrue(driver.FindElements(errorTextLocator).Count == 0, "Принят пустой email");
+            Assert.AreEqual("Введите email", driver.FindElement(errorTextLocator).Text);
+        }
+
+        public void ClickAnotherEmail()
+        {
+            driver.Navigate().GoToUrl(siteUrl);
+            driver.FindElement(emailInputLocator).SendKeys(correctEmail);
+            driver.FindElement(sendButtonLocator).Click();
+            driver.FindElement(anotherEmailLinkLocator).Click();
+            Assert.AreEqual(string.Empty, driver.FindElement(emailInputLocator).Text, "Поле почты не пустое после клика по ссылке выбрать другой email");
+            Assert.IsFalse(driver.FindElement(anotherEmailLinkLocator).Displayed, "Ссылка не пропадает");
         }
 
         [TearDown]
 
         public void TearDown()
         {
+            driver.Quit();
         }
     }
 }
