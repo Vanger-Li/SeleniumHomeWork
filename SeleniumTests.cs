@@ -41,6 +41,8 @@ namespace ParrotsNameSiteTests
             Assert.AreEqual(expectedEmail, driver.FindElement(emailResultTextLocator).Text, "Почта не совпадает");
         }
 
+        [Test]
+        
         public void selectBoysNames()
         {
             driver.Navigate().GoToUrl(siteUrl);
@@ -50,6 +52,8 @@ namespace ParrotsNameSiteTests
             Assert.IsTrue(driver.FindElement(resultTextLocator).Text.Contains("мальчика"), "указан другой пол");
         }
 
+        [Test]
+        
         public void selectGirlNames()
         {
             driver.Navigate().GoToUrl(siteUrl);
@@ -59,6 +63,8 @@ namespace ParrotsNameSiteTests
             Assert.IsTrue(driver.FindElement(resultTextLocator).Text.Contains("девочки"), "указан другой пол");
         }
 
+        [Test]
+        
         public void incorrectEmail()
         {
             driver.Navigate().GoToUrl(siteUrl);
@@ -69,6 +75,8 @@ namespace ParrotsNameSiteTests
             Assert.AreEqual("Некорректный email", driver.FindElement(errorTextLocator).Text);
         }
 
+        [Test]
+        
         public void EnterEmptyEmail()
         {
             driver.Navigate().GoToUrl(siteUrl);
@@ -77,6 +85,8 @@ namespace ParrotsNameSiteTests
             Assert.AreEqual("Введите email", driver.FindElement(errorTextLocator).Text);
         }
 
+        [Test]
+        
         public void ClickAnotherEmail()
         {
             driver.Navigate().GoToUrl(siteUrl);
